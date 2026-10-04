@@ -8,6 +8,13 @@
       "when": 1786183931650,
       "tag": "0000_majestic_vindicator",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1791089972195,
+      "tag": "0001_cost_check_lead_fields",
+      "breakpoints": true
     }
   ]
 }
