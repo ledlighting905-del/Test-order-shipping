@@ -33,7 +33,7 @@ export function isOfferServiceConfigured() {
 
 function cacheKey(url: string) {
   const offerId = url.match(/offer\/(\d{6,15})\.html/)?.[1];
-  return new Request(`https://offer-cache.china2thai.internal/v2/${offerId ?? encodeURIComponent(url)}`);
+  return new Request(`https://offer-cache.china2thai.internal/v4/${offerId ?? encodeURIComponent(url)}`);
 }
 
 function cacheStore(): Cache | null {
@@ -108,14 +108,22 @@ export async function fetchOffer(url: string): Promise<Offer1688> {
 
 /** แปลชื่อสินค้าและชื่อรุ่นเป็นไทย (Google ถ้ามี GOOGLE_TRANSLATE_API_KEY ไม่งั้นพจนานุกรม) */
 async function withThai(offer: Offer1688): Promise<Offer1688> {
-  const key = typeof env.GOOGLE_TRANSLATE_API_KEY === "string" ? env.GOOGLE_TRANSLATE_API_KEY : undefined;
-  const sources = [offer.title, ...offer.variants.map((variant) => variant.name)];
-  const { texts, engine } = await translateZhToTh(sources, key);
+  const googleApiKey = typeof env.GOOGLE_TRANSLATE_API_KEY === "string" ? env.GOOGLE_TRANSLATE_API_KEY : undefined;
+  const myMemoryEmail = typeof env.MYMEMORY_EMAIL === "string" ? env.MYMEMORY_EMAIL : undefined;
+  const options = { googleApiKey, myMemoryEmail };
+  // ชื่อสินค้า: แปลด้วยเครื่องให้อ่านลื่น · ชื่อรุ่น: ใช้พจนานุกรมก่อน (ศัพท์เทคนิคแม่นกว่า) ที่เหลือแปลด้วยเครื่อง
+  const [title, variants] = await Promise.all([
+    translateZhToTh([offer.title], { ...options, machineFirst: true }),
+    translateZhToTh(
+      offer.variants.map((variant) => variant.name),
+      options,
+    ),
+  ]);
   return {
     ...offer,
-    titleTh: texts[0],
-    translatedBy: engine,
-    variants: offer.variants.map((variant, index) => ({ ...variant, nameTh: texts[index + 1] })),
+    titleTh: title.texts[0],
+    translatedBy: title.engine !== "glossary" ? title.engine : variants.engine,
+    variants: offer.variants.map((variant, index) => ({ ...variant, nameTh: variants.texts[index] })),
   };
 }
 

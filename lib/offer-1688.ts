@@ -20,7 +20,7 @@ export type Offer1688 = {
   title: string;
   /** ชื่อสินค้าภาษาไทย (เติมหลังแปล) */
   titleTh?: string;
-  translatedBy?: "google" | "glossary";
+  translatedBy?: "google" | "mymemory" | "glossary";
   unit: string | null;
   shopName: string | null;
   shipFrom: string | null;

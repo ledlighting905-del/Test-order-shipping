@@ -28,5 +28,5 @@ interface Fetcher {
 }
 
 declare module "cloudflare:workers" {
-  export const env: { DB?: D1Database; OXYLABS_USERNAME?: string; OXYLABS_PASSWORD?: string; GOOGLE_TRANSLATE_API_KEY?: string } & Record<string, unknown>;
+  export const env: { DB?: D1Database; OXYLABS_USERNAME?: string; OXYLABS_PASSWORD?: string; GOOGLE_TRANSLATE_API_KEY?: string; MYMEMORY_EMAIL?: string } & Record<string, unknown>;
 }

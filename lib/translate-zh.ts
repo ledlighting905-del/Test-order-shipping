@@ -82,23 +82,110 @@ export function hasChinese(text: string) {
   return CJK.test(text);
 }
 
-/** แปลหลายข้อความพร้อมกัน — Google ถ้ามี key, ไม่งั้นพจนานุกรม */
-export async function translateZhToTh(texts: string[], googleApiKey?: string): Promise<{ texts: string[]; engine: "google" | "glossary" }> {
-  if (googleApiKey && texts.length) {
-    try {
-      const response = await fetch(`https://translation.googleapis.com/language/translate/v2?key=${encodeURIComponent(googleApiKey)}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ q: texts, source: "zh-CN", target: "th", format: "text" }),
-      });
-      if (response.ok) {
-        const data = (await response.json()) as { data?: { translations?: { translatedText?: string }[] } };
-        const translated = data.data?.translations?.map((item) => item.translatedText ?? "") ?? [];
-        if (translated.length === texts.length) return { texts: translated, engine: "google" };
-      }
-    } catch {
-      // ใช้พจนานุกรมแทน
-    }
+export type TranslateEngine = "google" | "mymemory" | "glossary";
+export type TranslateOptions = {
+  googleApiKey?: string;
+  myMemoryEmail?: string;
+  fetcher?: typeof fetch;
+  /** true = ส่งทุกข้อความที่มีภาษาจีนไปแปลด้วยเครื่อง (ใช้กับชื่อสินค้ายาว ๆ ให้อ่านลื่น) */
+  machineFirst?: boolean;
+};
+
+const MYMEMORY_CHUNK_CHARS = 450;
+const REQUEST_TIMEOUT_MS = 8_000;
+
+async function withTimeout<T>(task: (signal: AbortSignal) => Promise<T>) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+  try {
+    return await task(controller.signal);
+  } finally {
+    clearTimeout(timer);
   }
-  return { texts: texts.map(glossaryTranslate), engine: "glossary" };
+}
+
+async function googleTranslate(texts: string[], key: string, fetcher: typeof fetch) {
+  const response = await withTimeout((signal) =>
+    fetcher(`https://translation.googleapis.com/language/translate/v2?key=${encodeURIComponent(key)}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ q: texts, source: "zh-CN", target: "th", format: "text" }),
+      signal,
+    }),
+  );
+  if (!response.ok) return null;
+  const data = (await response.json()) as { data?: { translations?: { translatedText?: string }[] } };
+  const translated = data.data?.translations?.map((item) => item.translatedText ?? "") ?? [];
+  return translated.length === texts.length ? translated : null;
+}
+
+/** MyMemory (ฟรี ไม่ต้องใช้ key) — รวมหลายบรรทัดต่อคำขอเพื่อลดจำนวนครั้ง */
+async function myMemoryTranslate(texts: string[], email: string | undefined, fetcher: typeof fetch) {
+  const chunks: string[][] = [];
+  let current: string[] = [];
+  let size = 0;
+  for (const text of texts) {
+    const clean = text.replace(/\s*\n\s*/g, " ").slice(0, MYMEMORY_CHUNK_CHARS);
+    if (current.length && size + clean.length + 1 > MYMEMORY_CHUNK_CHARS) {
+      chunks.push(current);
+      current = [];
+      size = 0;
+    }
+    current.push(clean);
+    size += clean.length + 1;
+  }
+  if (current.length) chunks.push(current);
+
+  const results = await Promise.all(
+    chunks.map(async (lines) => {
+      const params = new URLSearchParams({ q: lines.join("\n"), langpair: "zh-CN|th" });
+      if (email) params.set("de", email);
+      const response = await withTimeout((signal) => fetcher(`https://api.mymemory.translated.net/get?${params}`, { signal }));
+      if (!response.ok) return null;
+      const data = (await response.json()) as { responseStatus?: number | string; responseData?: { translatedText?: string } };
+      const output = data.responseData?.translatedText;
+      if (Number(data.responseStatus) !== 200 || !output) return null;
+      const split = output.split("\n").map((line) => line.trim());
+      return split.length === lines.length ? split : null;
+    }),
+  );
+  if (results.some((chunk) => chunk === null)) return null;
+  return results.flat() as string[];
+}
+
+/**
+ * แปลหลายข้อความ (จีน → ไทย)
+ * 1) ข้อความที่พจนานุกรมแปลได้ครบทุกคำ → ใช้พจนานุกรม (ศัพท์เทคนิคแม่นกว่า)
+ * 2) ที่เหลือ → Google (ถ้ามี key) → MyMemory (ฟรี) → พจนานุกรมเท่าที่แปลได้
+ */
+export async function translateZhToTh(texts: string[], options: TranslateOptions = {}): Promise<{ texts: string[]; engine: TranslateEngine }> {
+  const fetcher = options.fetcher ?? fetch;
+  const glossary = texts.map(glossaryTranslate);
+  const pending = texts.map((text, index) => ({ text, index })).filter(({ text, index }) => hasChinese(text) && (options.machineFirst || hasChinese(glossary[index])));
+  if (!pending.length) return { texts: glossary, engine: "glossary" };
+
+  const sources = pending.map((item) => item.text);
+  let translated: string[] | null = null;
+  let engine: TranslateEngine = "glossary";
+  try {
+    if (options.googleApiKey) {
+      translated = await googleTranslate(sources, options.googleApiKey, fetcher);
+      if (translated) engine = "google";
+    }
+    if (!translated) {
+      translated = await myMemoryTranslate(sources, options.myMemoryEmail, fetcher);
+      if (translated) engine = "mymemory";
+    }
+  } catch {
+    translated = null;
+  }
+
+  const output = [...glossary];
+  if (translated) {
+    pending.forEach(({ index }, position) => {
+      const candidate = translated?.[position]?.trim();
+      if (candidate && !hasChinese(candidate)) output[index] = candidate;
+    });
+  }
+  return { texts: output, engine };
 }
