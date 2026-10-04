@@ -6,6 +6,7 @@ import { track } from "../lib/analytics";
 import { rememberAttribution } from "../lib/attribution";
 import {
   COST_CHECK_ITEMS,
+  extract1688Url,
   EMPTY_LEAD_DRAFT,
   PROVINCES,
   countCostCheckFields,
@@ -15,7 +16,9 @@ import {
   type LeadFieldErrors,
   type LeadType,
 } from "../lib/lead";
+import type { Offer1688 } from "../lib/offer-1688";
 import { LineMark } from "./icons";
+import { OfferPreview, type OfferPreviewState } from "./offer-preview";
 
 export type LeadDialogReason = "callback" | "call_pending" | "line_pending";
 export type LeadDialogHandle = { open: (request: { reason: LeadDialogReason; placement: string }) => void };
@@ -60,6 +63,10 @@ export function LeadDialog({ ref }: { ref: Ref<LeadDialogHandle> }) {
   const [status, setStatus] = useState<Status>("idle");
   const [formError, setFormError] = useState("");
   const [success, setSuccess] = useState<Success | null>(null);
+  const [preview, setPreview] = useState<OfferPreviewState>({ status: "idle" });
+  const previewUrlRef = useRef<string | null>(null);
+  const previewAbortRef = useRef<AbortController | null>(null);
+  const previewDisabledRef = useRef(false);
 
   useImperativeHandle(ref, () => ({
     open(next) {
@@ -97,6 +104,36 @@ export function LeadDialog({ ref }: { ref: Ref<LeadDialogHandle> }) {
       setDraft((current) => ({ ...current, [field]: value }));
       if (errors[field]) setErrors((current) => ({ ...current, [field]: undefined }));
     };
+  }
+
+  /** ดึงข้อมูลสินค้าจาก 1688 เมื่อได้ลิงก์ที่ถูกต้อง (ครั้งละลิงก์ ไม่ยิงซ้ำ) */
+  async function loadPreview(raw: string, force = false) {
+    const url = extract1688Url(raw);
+    if (!url || previewDisabledRef.current) return;
+    if (!force && previewUrlRef.current === url) return;
+    previewUrlRef.current = url;
+    previewAbortRef.current?.abort();
+    const controller = new AbortController();
+    previewAbortRef.current = controller;
+    setPreview({ status: "loading" });
+    try {
+      const response = await fetch("/api/product-preview", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url }),
+        signal: controller.signal,
+      });
+      const data = (await response.json().catch(() => ({}))) as { offer?: Offer1688; error?: string; configured?: boolean };
+      if (controller.signal.aborted) return;
+      if (data.configured === false) {
+        previewDisabledRef.current = true;
+        setPreview({ status: "idle" });
+        return;
+      }
+      setPreview(response.ok && data.offer ? { status: "ready", offer: data.offer } : { status: "error", message: data.error ?? "ดึงข้อมูลสินค้าไม่สำเร็จ" });
+    } catch {
+      if (!controller.signal.aborted) setPreview({ status: "error", message: "เชื่อมต่อไม่สำเร็จ" });
+    }
   }
 
   function fieldProps(field: LeadField) {
@@ -174,6 +211,8 @@ export function LeadDialog({ ref }: { ref: Ref<LeadDialogHandle> }) {
 
       setSuccess({ leadType, fieldsCompleted });
       setDraft(EMPTY_LEAD_DRAFT);
+      setPreview({ status: "idle" });
+      previewUrlRef.current = null;
       setErrors({});
       setStatus("idle");
       submissionIdRef.current = null;
@@ -289,8 +328,18 @@ export function LeadDialog({ ref }: { ref: Ref<LeadDialogHandle> }) {
 
                 <div className="field">
                   <label htmlFor="lead-productUrl">1) ลิงก์สินค้า 1688</label>
-                  <input {...fieldProps("productUrl")} value={draft.productUrl} onChange={update("productUrl")} inputMode="url" autoComplete="off" autoCapitalize="none" spellCheck={false} maxLength={1000} placeholder="วางลิงก์หรือข้อความแชร์จากแอป 1688" />
+                  <input
+                    {...fieldProps("productUrl")}
+                    value={draft.productUrl}
+                    onChange={(event) => {
+                      update("productUrl")(event);
+                      const pasted = event.nativeEvent instanceof InputEvent && event.nativeEvent.inputType === "insertFromPaste";
+                      if (pasted) void loadPreview(event.target.value);
+                    }}
+                    onBlur={(event) => void loadPreview(event.target.value)}
+                    inputMode="url" autoComplete="off" autoCapitalize="none" spellCheck={false} maxLength={1000} placeholder="วางลิงก์หรือข้อความแชร์จากแอป 1688" />
                   {fieldError("productUrl")}
+                  <OfferPreview state={preview} onRetry={() => void loadPreview(draft.productUrl, true)} />
                 </div>
                 <div className="field-row">
                   <div className="field">
@@ -306,8 +355,15 @@ export function LeadDialog({ ref }: { ref: Ref<LeadDialogHandle> }) {
                 </div>
                 <div className="field">
                   <label htmlFor="lead-variant">3) แบบ / สี / รุ่น</label>
-                  <input {...fieldProps("variant")} value={draft.variant} onChange={update("variant")} autoComplete="off" maxLength={300} placeholder="เช่น สีดำ ไซซ์ M รุ่นมีฝา" />
+                  <input {...fieldProps("variant")} list={preview.status === "ready" && preview.offer.variants.length ? "lead-variant-options" : undefined} value={draft.variant} onChange={update("variant")} autoComplete="off" maxLength={300} placeholder="เช่น สีดำ ไซซ์ M รุ่นมีฝา" />
                   {fieldError("variant")}
+                  {preview.status === "ready" && preview.offer.variants.length ? (
+                    <datalist id="lead-variant-options">
+                      {preview.offer.variants.map((variant) => (
+                        <option key={variant.name} value={variant.name} />
+                      ))}
+                    </datalist>
+                  ) : null}
                 </div>
                 <div className="field">
                   <label htmlFor="lead-province">5) จังหวัดปลายทาง</label>

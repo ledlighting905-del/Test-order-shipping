@@ -1,0 +1,1 @@
+ALTER TABLE `leads` ADD `product_snapshot` text;

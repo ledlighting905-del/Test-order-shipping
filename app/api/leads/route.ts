@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { insertLead } from "../../../db/leads";
 import { isSubmissionId, sanitizeAttribution, sanitizePlacement, validateLead } from "../../../lib/lead";
+import { getCachedOffer, offerSnapshot } from "../../../lib/offer-service";
 
 const MAX_BODY_BYTES = 8_000;
 const NO_STORE = { "Cache-Control": "no-store" };
@@ -38,12 +39,16 @@ export async function POST(request: Request) {
 
   const id = isSubmissionId(payload.submissionId) ? payload.submissionId.toLowerCase() : crypto.randomUUID();
 
+  // ข้อมูลสินค้าที่ฟอร์มดึงไว้แล้ว (อ่านจาก cache ฝั่ง server เท่านั้น ไม่ยิง API ซ้ำ ไม่เชื่อข้อมูลจาก client)
+  const cachedOffer = result.lead.productUrl ? await getCachedOffer(result.lead.productUrl) : null;
+
   try {
     const { duplicate } = await insertLead({
       id,
       lead: result.lead,
       source: sanitizePlacement(payload.placement),
       attribution: sanitizeAttribution(payload.attribution),
+      productSnapshot: cachedOffer ? offerSnapshot(cachedOffer) : null,
     });
     return reply(
       { ok: true, id, leadType: result.lead.leadType, fieldsCompleted: result.lead.fieldsCompleted, duplicate },

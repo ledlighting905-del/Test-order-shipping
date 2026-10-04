@@ -6,6 +6,7 @@ export type LeadInsert = {
   lead: ValidLead;
   source: string;
   attribution: LeadAttribution;
+  productSnapshot?: string | null;
 };
 
 function database() {
@@ -17,16 +18,16 @@ function database() {
  * บันทึก Lead — idempotent ตาม id (submission id จากฟอร์ม)
  * กดส่งซ้ำ/เน็ตกระตุกแล้ว retry จะไม่เกิดแถวซ้ำ
  */
-export async function insertLead({ id, lead, source, attribution }: LeadInsert) {
+export async function insertLead({ id, lead, source, attribution, productSnapshot = null }: LeadInsert) {
   const now = new Date().toISOString();
   const result = await database()
     .prepare(
       `INSERT INTO leads (
         id, name, phone, line_id, interest, source, status, created_at,
         product_url, quantity, variant, target_price, province,
-        lead_type, fields_completed, tags, consent_at,
+        lead_type, fields_completed, tags, consent_at, product_snapshot,
         utm_source, utm_medium, utm_campaign, utm_content, utm_term, click_id, referrer, landing_path
-      ) VALUES (?, ?, ?, ?, ?, ?, 'new', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      ) VALUES (?, ?, ?, ?, ?, ?, 'new', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       ON CONFLICT(id) DO NOTHING`,
     )
     .bind(
@@ -46,6 +47,7 @@ export async function insertLead({ id, lead, source, attribution }: LeadInsert) 
       lead.fieldsCompleted,
       JSON.stringify([LEAD_DEFAULT_TAG]),
       now,
+      productSnapshot,
       attribution.utmSource,
       attribution.utmMedium,
       attribution.utmCampaign,

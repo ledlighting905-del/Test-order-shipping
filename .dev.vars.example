@@ -1,0 +1,3 @@
+# คัดลอกเป็น .dev.vars แล้วใส่ค่าจริง (ห้าม commit)
+OXYLABS_USERNAME=
+OXYLABS_PASSWORD=

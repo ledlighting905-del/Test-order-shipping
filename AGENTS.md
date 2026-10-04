@@ -9,3 +9,4 @@
 - โทนสี ส้ม–ครีม–น้ำตาลเข้ม (tokens ใน `app/globals.css`), headline "รู้ต้นทุนก่อนกดสั่ง 1688", มือถือมี sticky contact bar
 - ก่อนจบงาน: `npm run lint` และ `npm test` ต้องผ่าน
 - Hosting: Sites (`.openai/hosting.json`) ใช้ `project_id` เดิมเท่านั้น ห้ามสร้าง Site ใหม่
+- ข้อมูลสินค้า 1688: ดึงผ่าน `lib/offer-service.ts` (Oxylabs) ฝั่ง server เท่านั้น credentials อยู่ใน secret `OXYLABS_USERNAME`/`OXYLABS_PASSWORD` ห้ามใส่ในโค้ดหรือ commit `.dev.vars`

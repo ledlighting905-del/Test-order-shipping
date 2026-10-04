@@ -35,7 +35,20 @@ Content → เว็บไซต์ → โทร / LINE OA → Cost Check → 
 - เก็บ UTM / fbclid / gclid / ttclid / referrer เพื่อคำนวณ CPL ราย campaign
 - Response: `201` บันทึกใหม่, `200` ซ้ำ, `422` + `fieldErrors`, `400/413/415` payload ผิด, `503` DB ขัดข้อง, `GET → 405`
 
-Schema: `db/schema.ts` · Migration: `drizzle/0001_cost_check_lead_fields.sql` (เพิ่มคอลัมน์แบบ nullable — ข้อมูลเดิมไม่กระทบ)
+Schema: `db/schema.ts` · Migration: `drizzle/0001_cost_check_lead_fields.sql`, `drizzle/0002_product_snapshot.sql` (เพิ่มคอลัมน์แบบ nullable — ข้อมูลเดิมไม่กระทบ)
+
+## ดึงข้อมูลสินค้า 1688 อัตโนมัติ (Oxylabs)
+
+ลูกค้าวางลิงก์ 1688 ในฟอร์ม → `POST /api/product-preview` → Oxylabs Web Scraper API ดึงหน้าสินค้า → `lib/offer-1688.ts` แกะข้อมูล → แสดงการ์ดในฟอร์ม และเก็บลง `leads.product_snapshot` ตอนส่งฟอร์ม
+
+- ได้: ชื่อสินค้า, ร้าน, เมืองต้นทาง, ราคา ¥ (ช่วงราคา/ขั้นราคาตามจำนวน), MOQ, ทุกแบบ/สี/รุ่น พร้อมราคา สต็อก น้ำหนัก ขนาดกล่อง
+- น้ำหนัก/ขนาดเป็นค่าที่ร้านกรอกเอง → ใช้เป็นตัวเลขตั้งต้น ทีมตรวจซ้ำก่อนเสนอราคา
+- Cache 6 ชั่วโมงต่อสินค้า (ลิงก์เดิมไม่เสียโควตาซ้ำ) · รับเฉพาะคำขอจากหน้าเว็บตัวเอง · ใช้เวลา 5–30 วินาทีต่อลิงก์ใหม่
+- ไม่ตั้งค่า secret = ฟอร์มทำงานตามปกติ แค่ไม่มีการ์ดสินค้า
+
+**Secrets (ห้าม commit):** `OXYLABS_USERNAME`, `OXYLABS_PASSWORD`
+- Local: คัดลอก `.dev.vars.example` เป็น `.dev.vars` แล้วใส่ค่า (ถ้ารันจาก `dist/` ให้คัดลอกไป `dist/server/.dev.vars` ด้วย)
+- Production: ตั้งเป็น Site secret ผ่าน Sites (Codex) ก่อน deploy
 
 ## Tracking
 

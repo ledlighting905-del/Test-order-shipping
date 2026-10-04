@@ -24,6 +24,8 @@ export const leads = sqliteTable("leads", {
   /** JSON array เช่น ["1688-cost-check"] */
   tags: text("tags"),
   consentAt: text("consent_at"),
+  /** ข้อมูลสินค้าที่ดึงจาก 1688 อัตโนมัติ (JSON: ชื่อ ราคา MOQ รุ่น น้ำหนัก ขนาด) */
+  productSnapshot: text("product_snapshot"),
 
   // Attribution — ใช้คำนวณ CPL ราย campaign
   utmSource: text("utm_source"),
