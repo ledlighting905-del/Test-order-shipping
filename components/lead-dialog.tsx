@@ -360,7 +360,7 @@ export function LeadDialog({ ref }: { ref: Ref<LeadDialogHandle> }) {
                   {preview.status === "ready" && preview.offer.variants.length ? (
                     <datalist id="lead-variant-options">
                       {preview.offer.variants.map((variant) => (
-                        <option key={variant.name} value={variant.name} />
+                        <option key={variant.name} value={variant.nameTh && variant.nameTh !== variant.name ? `${variant.nameTh} (${variant.name})` : variant.name} />
                       ))}
                     </datalist>
                   ) : null}

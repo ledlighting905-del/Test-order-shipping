@@ -6,6 +6,8 @@
 
 export type OfferVariant = {
   name: string;
+  /** ชื่อรุ่นภาษาไทย (เติมหลังแปล) */
+  nameTh?: string;
   priceCny: number | null;
   stock: number | null;
   weightKg: number | null;
@@ -16,6 +18,9 @@ export type Offer1688 = {
   offerId: string;
   url: string;
   title: string;
+  /** ชื่อสินค้าภาษาไทย (เติมหลังแปล) */
+  titleTh?: string;
+  translatedBy?: "google" | "glossary";
   unit: string | null;
   shopName: string | null;
   shipFrom: string | null;

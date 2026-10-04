@@ -1,6 +1,7 @@
 "use client";
 
 import type { Offer1688 } from "../lib/offer-1688";
+import { glossaryTranslate } from "../lib/translate-zh";
 
 export type OfferPreviewState =
   | { status: "idle" }
@@ -37,6 +38,7 @@ export function OfferPreview({ state, onRetry }: { state: OfferPreviewState; onR
   }
 
   const { offer } = state;
+  const unit = offer.unit ? glossaryTranslate(offer.unit) : null;
   const price =
     offer.priceMinCny === null
       ? "—"
@@ -51,20 +53,23 @@ export function OfferPreview({ state, onRetry }: { state: OfferPreviewState; onR
         <img src={`${offer.image}_200x200.jpg`} alt="" width={72} height={72} loading="lazy" referrerPolicy="no-referrer" />
       ) : null}
       <div className="offer-body">
-        <p className="offer-title" lang="zh">
-          {offer.title}
-        </p>
+        <p className="offer-title">{offer.titleTh ?? offer.title}</p>
+        {offer.titleTh ? (
+          <p className="offer-title-zh" lang="zh">
+            {offer.title}
+          </p>
+        ) : null}
         <dl>
           <div>
             <dt>ราคาหน้าร้าน</dt>
             <dd>
               {price}
-              {offer.unit ? ` / ${offer.unit}` : ""}
+              {unit ? ` / ${unit}` : ""}
             </dd>
           </div>
           <div>
             <dt>ขั้นต่ำ</dt>
-            <dd>{offer.moq ? `${offer.moq.toLocaleString("en-US")} ${offer.unit ?? "ชิ้น"}` : "—"}</dd>
+            <dd>{offer.moq ? `${offer.moq.toLocaleString("en-US")} ${unit ?? "ชิ้น"}` : "—"}</dd>
           </div>
           <div>
             <dt>แบบ/รุ่น</dt>
@@ -72,7 +77,7 @@ export function OfferPreview({ state, onRetry }: { state: OfferPreviewState; onR
           </div>
           <div>
             <dt>ส่งจาก</dt>
-            <dd lang="zh">{offer.shipFrom ?? "—"}</dd>
+            <dd>{offer.shipFrom ? glossaryTranslate(offer.shipFrom) : "—"}</dd>
           </div>
         </dl>
         <p className="offer-flags">

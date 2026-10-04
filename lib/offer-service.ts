@@ -1,5 +1,6 @@
 import { env } from "cloudflare:workers";
 import { parseOffer1688, type Offer1688 } from "./offer-1688";
+import { translateZhToTh } from "./translate-zh";
 
 /**
  * ดึงข้อมูลสินค้า 1688 ผ่าน Oxylabs Web Scraper API (ฝั่ง server เท่านั้น)
@@ -32,7 +33,7 @@ export function isOfferServiceConfigured() {
 
 function cacheKey(url: string) {
   const offerId = url.match(/offer\/(\d{6,15})\.html/)?.[1];
-  return new Request(`https://offer-cache.china2thai.internal/${offerId ?? encodeURIComponent(url)}`);
+  return new Request(`https://offer-cache.china2thai.internal/v2/${offerId ?? encodeURIComponent(url)}`);
 }
 
 function cacheStore(): Cache | null {
@@ -97,11 +98,25 @@ export async function fetchOffer(url: string): Promise<Offer1688> {
     throw new OfferServiceError("ไม่พบสินค้านี้บน 1688 (ลิงก์อาจถูกลบหรือปิดการขาย)", 404);
   }
 
-  const offer = parseOffer1688(result.content, result.url ?? url);
-  if (!offer) throw new OfferServiceError("อ่านข้อมูลหน้าสินค้านี้ไม่ได้ ทีมจะเปิดดูเอง", 422);
+  const parsed = parseOffer1688(result.content, result.url ?? url);
+  if (!parsed) throw new OfferServiceError("อ่านข้อมูลหน้าสินค้านี้ไม่ได้ ทีมจะเปิดดูเอง", 422);
+  const offer = await withThai(parsed);
 
   await putCachedOffer(url, offer);
   return offer;
+}
+
+/** แปลชื่อสินค้าและชื่อรุ่นเป็นไทย (Google ถ้ามี GOOGLE_TRANSLATE_API_KEY ไม่งั้นพจนานุกรม) */
+async function withThai(offer: Offer1688): Promise<Offer1688> {
+  const key = typeof env.GOOGLE_TRANSLATE_API_KEY === "string" ? env.GOOGLE_TRANSLATE_API_KEY : undefined;
+  const sources = [offer.title, ...offer.variants.map((variant) => variant.name)];
+  const { texts, engine } = await translateZhToTh(sources, key);
+  return {
+    ...offer,
+    titleTh: texts[0],
+    translatedBy: engine,
+    variants: offer.variants.map((variant, index) => ({ ...variant, nameTh: texts[index + 1] })),
+  };
 }
 
 /** ย่อข้อมูลเก็บคู่กับ Lead (ไม่เก็บทุกรุ่นถ้ามีเยอะ) */

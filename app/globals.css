@@ -195,7 +195,7 @@ main:focus { outline: none; }
 .completion-bar { height: 6px; overflow: hidden; border-radius: 99px; background: #f4e9e2; }
 .completion-bar span { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, #ff8a5c, var(--orange)); transition: width .25s ease; }
 .group-hint { margin: -4px 0 0; color: var(--muted); font-size: 13px; }
-.field { display: grid; gap: 6px; min-width: 0; }
+.field { display: grid; grid-template-columns: minmax(0, 1fr); gap: 6px; min-width: 0; }
 .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .field label { color: var(--ink-soft); font-size: 14px; font-weight: 700; }
 .req { color: #b42318; }
@@ -335,3 +335,4 @@ main:focus { outline: none; }
 .offer-flags .warn { background: #fff0e3; color: #8f3410; font-weight: 700; }
 .offer-flags .note { padding-left: 0; color: var(--muted); }
 .offer-preview.is-loading small { display: block; color: var(--muted); font-size: 12px; }
+.offer-title-zh { margin: 2px 0 0; overflow: hidden; color: var(--muted); font-size: 12px; text-overflow: ellipsis; white-space: nowrap; }
