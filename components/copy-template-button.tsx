@@ -22,7 +22,7 @@ async function copyText(text: string) {
   }
 }
 
-/** คัดลอกข้อความต้นแบบ 5 ข้อ ให้ลูกค้าไปวางใน LINE แล้วเติมข้อมูล */
+/** คัดลอกข้อความต้นแบบ ให้ลูกค้าไปวางใน LINE แล้วเติมข้อมูล */
 export function CopyTemplateButton({ className }: { className?: string }) {
   const [state, setState] = useState<"idle" | "copied" | "failed">("idle");
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -35,7 +35,7 @@ export function CopyTemplateButton({ className }: { className?: string }) {
   }
 
   const label =
-    state === "copied" ? "คัดลอกแล้ว ไปวางในแชท LINE ได้เลย ✓" : state === "failed" ? "คัดลอกไม่ได้ พิมพ์ตามรายการด้านบนได้เลย" : "คัดลอกข้อความ 5 ข้อไปวางใน LINE";
+    state === "copied" ? "คัดลอกแล้ว ไปวางในแชท LINE ได้เลย ✓" : state === "failed" ? "คัดลอกไม่ได้ พิมพ์ตามรายการด้านบนได้เลย" : "คัดลอกข้อความไปวางใน LINE";
 
   return (
     <button type="button" className={className} onClick={handleCopy}>

@@ -29,7 +29,7 @@ const costRisks = [
 
 const steps = [
   { title: "โทร หรือทัก LINE", text: `เลือกช่องทางที่สะดวก ถ้าทาง LINE ${LINE_INSTRUCTION}` },
-  { title: "ส่งข้อมูล 5 อย่าง", text: COST_CHECK_ITEMS.map((item) => item.short).join(" · ") },
+  { title: `ส่งข้อมูล ${COST_CHECK_ITEMS.length} อย่าง`, text: COST_CHECK_ITEMS.map((item) => item.short).join(" · ") },
   { title: "รับ Cost Check", text: "ทีมประเมินต้นทุนต่อชิ้นโดยประมาณ รวมค่าขนส่งและภาษีที่เกี่ยวข้อง เทียบกับราคาที่คุณจะขาย" },
   { title: "ตัดสินใจแล้วค่อยสั่ง", text: "ตกลงสั่ง ทีมออกใบเสนอราคาให้ หรือจะปรับจำนวน/เปลี่ยนสินค้าก่อนก็ได้" },
 ];
@@ -177,9 +177,9 @@ export default function Home() {
                 <div className="cost-card-head">
                   <div>
                     <p className="cost-card-kicker">COST CHECK</p>
-                    <h2>ส่ง 5 อย่างนี้ เช็กต้นทุนได้ครบ</h2>
+                    <h2>ส่ง {COST_CHECK_ITEMS.length} อย่างนี้ เช็กต้นทุนได้ครบ</h2>
                   </div>
-                  <span aria-hidden="true">5</span>
+                  <span aria-hidden="true">{COST_CHECK_ITEMS.length}</span>
                 </div>
                 <ol className="check-list">
                   {COST_CHECK_ITEMS.map((item, index) => (
@@ -207,7 +207,7 @@ export default function Home() {
             </li>
             <li>
               <span>สิ่งที่ต้องส่ง</span>
-              <b>ลิงก์ 1688 + อีก 4 ข้อ</b>
+              <b>ลิงก์ 1688 + จำนวน + แบบ/สี/รุ่น</b>
             </li>
             <li>
               <span>ไม่สะดวกคุย</span>

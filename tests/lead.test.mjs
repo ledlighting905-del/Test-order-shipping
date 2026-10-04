@@ -38,20 +38,17 @@ test("ชื่อ + เบอร์ + consent พอสำหรับ callback
   assert.equal(result.lead.fieldsCompleted, 0);
 });
 
-test("ครบ 5 ข้อ = cost_check และแปลงตัวเลขได้", () => {
+test("ครบ 3 ข้อ = cost_check และแปลงตัวเลขได้", () => {
   const result = validateLead({
     ...base,
     productUrl: "https://detail.1688.com/offer/1.html",
     quantity: "1,200 ชิ้น",
     variant: "สีดำ",
-    targetPrice: "฿199.50",
-    province: "สมุทรปราการ",
   });
   assert.equal(result.ok, true);
   assert.equal(result.lead.leadType, "cost_check");
   assert.equal(result.lead.quantity, 1200);
-  assert.equal(result.lead.targetPrice, 199.5);
-  assert.match(summarizeLead(result.lead), /ปลายทาง: สมุทรปราการ/);
+  assert.match(summarizeLead(result.lead), /แบบ\/สี\/รุ่น: สีดำ/);
 });
 
 test("แจ้ง error รายช่องเมื่อข้อมูลผิด", () => {
@@ -63,7 +60,7 @@ test("แจ้ง error รายช่องเมื่อข้อมูล�
 });
 
 test("นับความครบของ Cost Check เฉพาะค่าที่ใช้ได้", () => {
-  assert.equal(countCostCheckFields({ productUrl: "https://detail.1688.com/x", quantity: "abc", province: "ชลบุรี" }), 2);
+  assert.equal(countCostCheckFields({ productUrl: "https://detail.1688.com/x", quantity: "abc", variant: "สีแดง" }), 2);
 });
 
 test("ข้อความ LINE มีคีย์เวิร์ดและ 5 หัวข้อ", () => {

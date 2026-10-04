@@ -8,7 +8,6 @@ import {
   COST_CHECK_ITEMS,
   extract1688Url,
   EMPTY_LEAD_DRAFT,
-  PROVINCES,
   countCostCheckFields,
   validateLead,
   type LeadDraft,
@@ -34,7 +33,7 @@ const INTRO: Record<LeadDialogReason, { notice?: string; text: string }> = {
   },
   line_pending: {
     notice: "LINE OA ของเว็บกำลังตั้งค่า ส่งข้อมูลผ่านฟอร์มนี้แทนได้เลย",
-    text: "กรอกข้อมูลสินค้าให้ครบ 5 ข้อ ทีมจะเช็กต้นทุนแล้วติดต่อกลับ",
+    text: "กรอกข้อมูลสินค้าให้ครบ ทีมจะเช็กต้นทุนแล้วติดต่อกลับ",
   },
 };
 
@@ -255,7 +254,7 @@ export function LeadDialog({ ref }: { ref: Ref<LeadDialogHandle> }) {
             <h2 id="lead-dialog-title">รับข้อมูลแล้ว</h2>
             <p>
               {success.leadType === "cost_check"
-                ? "ได้ข้อมูลครบ 5 ข้อ ทีมจะเช็กต้นทุนแล้วติดต่อกลับในเวลาทำการ"
+                ? "ได้ข้อมูลสินค้าครบ ทีมจะเช็กต้นทุนแล้วติดต่อกลับในเวลาทำการ"
                 : "ทีมจะโทรกลับในเวลาทำการ เพื่อคุยรายละเอียดสินค้าที่เหลือ"}
               {contact.hours ? ` (${contact.hours})` : ""}
             </p>
@@ -324,7 +323,7 @@ export function LeadDialog({ ref }: { ref: Ref<LeadDialogHandle> }) {
                 <div className="completion-bar" aria-hidden="true">
                   <span style={{ width: `${(completed / COST_CHECK_ITEMS.length) * 100}%` }} />
                 </div>
-                <p className="group-hint">ใส่ครบ 5 ข้อ ทีมเช็กต้นทุนได้ทันทีโดยไม่ต้องถามกลับ</p>
+                <p className="group-hint">ใส่ครบ {COST_CHECK_ITEMS.length} ข้อ ทีมเช็กต้นทุนได้ทันทีโดยไม่ต้องถามกลับ</p>
 
                 <div className="field">
                   <label htmlFor="lead-productUrl">1) ลิงก์สินค้า 1688</label>
@@ -341,17 +340,10 @@ export function LeadDialog({ ref }: { ref: Ref<LeadDialogHandle> }) {
                   {fieldError("productUrl")}
                   <OfferPreview state={preview} onRetry={() => void loadPreview(draft.productUrl, true)} />
                 </div>
-                <div className="field-row">
-                  <div className="field">
-                    <label htmlFor="lead-quantity">2) จำนวน (ชิ้น)</label>
-                    <input {...fieldProps("quantity")} value={draft.quantity} onChange={update("quantity")} inputMode="numeric" autoComplete="off" maxLength={12} placeholder="เช่น 200" />
-                    {fieldError("quantity")}
-                  </div>
-                  <div className="field">
-                    <label htmlFor="lead-targetPrice">4) ราคาที่ตั้งใจขาย (บาท/ชิ้น)</label>
-                    <input {...fieldProps("targetPrice")} value={draft.targetPrice} onChange={update("targetPrice")} inputMode="decimal" autoComplete="off" maxLength={14} placeholder="เช่น 199" />
-                    {fieldError("targetPrice")}
-                  </div>
+                <div className="field">
+                  <label htmlFor="lead-quantity">2) จำนวน (ชิ้น)</label>
+                  <input {...fieldProps("quantity")} value={draft.quantity} onChange={update("quantity")} inputMode="numeric" autoComplete="off" maxLength={12} placeholder="เช่น 200" />
+                  {fieldError("quantity")}
                 </div>
                 <div className="field">
                   <label htmlFor="lead-variant">3) แบบ / สี / รุ่น</label>
@@ -364,18 +356,6 @@ export function LeadDialog({ ref }: { ref: Ref<LeadDialogHandle> }) {
                       ))}
                     </datalist>
                   ) : null}
-                </div>
-                <div className="field">
-                  <label htmlFor="lead-province">5) จังหวัดปลายทาง</label>
-                  <select {...fieldProps("province")} value={draft.province} onChange={update("province")}>
-                    <option value="">เลือกจังหวัด</option>
-                    {PROVINCES.map((province) => (
-                      <option key={province} value={province}>
-                        {province}
-                      </option>
-                    ))}
-                  </select>
-                  {fieldError("province")}
                 </div>
               </fieldset>
 

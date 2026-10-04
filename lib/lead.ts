@@ -20,17 +20,15 @@ export const PROVINCES = [
 
 const PROVINCE_SET = new Set<string>(PROVINCES);
 
-/** 5 ข้อมูลที่ทีมต้องใช้ทำ Cost Check — ลำดับนี้ใช้ทั้งหน้าเว็บ ฟอร์ม และข้อความ LINE */
+/** ข้อมูลที่ทีมต้องใช้ทำ Cost Check — ลำดับนี้ใช้ทั้งหน้าเว็บ ฟอร์ม และข้อความ LINE */
 export const COST_CHECK_ITEMS = [
   { field: "productUrl", label: "ลิงก์สินค้า 1688", short: "ลิงก์ 1688" },
   { field: "quantity", label: "จำนวนที่จะสั่ง", short: "จำนวน" },
   { field: "variant", label: "แบบ / สี / รุ่น", short: "แบบ/สี/รุ่น" },
-  { field: "targetPrice", label: "ราคาที่ตั้งใจขาย", short: "ราคาที่ตั้งใจขาย" },
-  { field: "province", label: "จังหวัดปลายทาง", short: "จังหวัดปลายทาง" },
 ] as const;
 
 export type CostCheckField = (typeof COST_CHECK_ITEMS)[number]["field"];
-export type LeadField = "name" | "phone" | "lineId" | CostCheckField | "consent";
+export type LeadField = "name" | "phone" | "lineId" | CostCheckField | "targetPrice" | "province" | "consent";
 export type LeadFieldErrors = Partial<Record<LeadField, string>>;
 export type LeadType = "cost_check" | "callback";
 
@@ -198,8 +196,6 @@ const COST_CHECK_PARSERS: Record<CostCheckField, (raw: unknown) => Parsed<string
   productUrl: parseProductUrl,
   quantity: parseQuantity,
   variant: parseVariant,
-  targetPrice: parseTargetPrice,
-  province: parseProvince,
 };
 
 /** นับว่าข้อมูล Cost Check ที่ "ใช้ได้จริง" ครบกี่ข้อจาก 5 */

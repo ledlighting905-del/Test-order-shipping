@@ -24,11 +24,11 @@ Content → เว็บไซต์ → โทร / LINE OA → Cost Check → 
 
 ## Lead (D1 · `POST /api/leads`)
 
-ฟอร์มเก็บ: ชื่อ*, เบอร์โทร*, LINE ID, ลิงก์ 1688, จำนวน, แบบ/สี/รุ่น, ราคาที่ตั้งใจขาย, จังหวัดปลายทาง, consent* (`*` = บังคับ)
+ฟอร์มเก็บ: ชื่อ*, เบอร์โทร*, LINE ID, ลิงก์ 1688, จำนวน, แบบ/สี/รุ่น, consent* (`*` = บังคับ) — ราคาที่ตั้งใจขายและจังหวัดปลายทางทีมถามเพิ่มตอนโทร (API ยังรับได้ถ้าส่งมา)
 
 - กติกาตรวจข้อมูลชุดเดียวใช้ทั้งหน้าเว็บและ API: `lib/lead.ts`
 - วางข้อความแชร์จากแอป 1688 ได้ทั้งก้อน ระบบดึง URL ให้ (รับเฉพาะโดเมน `*.1688.com`)
-- กรอกครบ 5 ข้อ → `lead_type = cost_check`, ไม่ครบ → `callback`; เก็บ `fields_completed` (0–5)
+- กรอกครบ 3 ข้อ (ลิงก์ + จำนวน + แบบ/สี/รุ่น) → `lead_type = cost_check`, ไม่ครบ → `callback`; เก็บ `fields_completed` (0–3)
 - Tag เริ่มต้น `["1688-cost-check"]`, สถานะเริ่มต้น `new`
 - กันซ้ำ: ปุ่มล็อกระหว่างส่ง + `submissionId` เป็น primary key (`ON CONFLICT DO NOTHING`)
 - Honeypot `website` → ตอบสำเร็จแบบเงียบ ไม่บันทึก
@@ -60,8 +60,8 @@ Schema: `db/schema.ts` · Migration: `drizzle/0001_cost_check_lead_fields.sql`, 
 | `click_call` | กดปุ่มโทร | `placement`, `contact_ready` |
 | `click_line` | กดปุ่ม LINE | `placement`, `contact_ready` |
 | `open_callback_form` | เปิดฟอร์มฝากเบอร์ | `placement`, `reason` |
-| `submit_callback` | ส่งฟอร์มสำเร็จ ข้อมูลสินค้าไม่ครบ 5 | `lead_type`, `fields_completed` |
-| `submit_cost_check` | ส่งฟอร์มสำเร็จ ครบ 5 ข้อ | `lead_type`, `fields_completed` |
+| `submit_callback` | ส่งฟอร์มสำเร็จ ข้อมูลสินค้าไม่ครบ 3 | `lead_type`, `fields_completed` |
+| `submit_cost_check` | ส่งฟอร์มสำเร็จ ครบ 3 ข้อ | `lead_type`, `fields_completed` |
 
 ตั้งค่าใน `config/site.ts`: ใส่ `GTM_ID` เมื่อมีบัญชีจริง (ว่าง = ไม่โหลด), เปิด `FORWARD_TO_META_PIXEL` / `FORWARD_TO_GTAG` เฉพาะกรณีติดสคริปต์ตรงไม่ผ่าน GTM
 Debug: เปิดเว็บด้วย `?debug_tracking=1` แล้วดู console
