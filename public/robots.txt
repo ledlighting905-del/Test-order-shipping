@@ -1,5 +1,6 @@
 User-agent: *
 Allow: /
 Disallow: /api/
+Disallow: /admin/
 
 Sitemap: https://china2thai-market-68.ledlighting905.chatgpt.site/sitemap.xml

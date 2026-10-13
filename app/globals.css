@@ -336,3 +336,46 @@ main:focus { outline: none; }
 .offer-flags .note { padding-left: 0; color: var(--muted); }
 .offer-preview.is-loading small { display: block; color: var(--muted); font-size: 12px; }
 .offer-title-zh { margin: 2px 0 0; overflow: hidden; color: var(--muted); font-size: 12px; text-overflow: ellipsis; white-space: nowrap; }
+
+/* ===== หลังบ้าน /admin/leads ===== */
+.adm { max-width: 960px; margin: 0 auto; padding: 20px 16px 48px; }
+.adm-narrow { max-width: 560px; padding-top: 64px; }
+.adm h1 { font-size: 1.5rem; margin: 0 0 4px; line-height: 1.3; }
+.adm a { color: var(--orange-ink); }
+.adm-head { display: flex; gap: 12px; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; margin-bottom: 16px; }
+.adm-head p { margin: 0; color: var(--muted); font-size: .9rem; }
+.adm .adm-btn { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: 0 16px; border-radius: 10px; border: 1px solid var(--line); background: #fff; color: var(--ink); font-weight: 700; text-decoration: none; cursor: pointer; }
+.adm .adm-btn.call { background: linear-gradient(var(--cta-from), var(--cta-to)); color: #fff; border-color: transparent; }
+.adm .adm-btn.line { background: var(--line-green); color: #fff; border-color: transparent; }
+.adm-kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin-bottom: 16px; }
+.adm-kpis div { background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; display: grid; gap: 2px; }
+.adm-kpis b { font-family: var(--font-latin); font-size: 1.7rem; line-height: 1.1; }
+.adm-kpis span { color: var(--muted); font-size: .85rem; }
+.adm-camp { background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; margin-bottom: 16px; }
+.adm-camp h2 { font-size: 1rem; margin: 0 0 8px; }
+.adm-camp ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.adm-camp li { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 10px; align-items: baseline; }
+.adm-camp li span { overflow-wrap: anywhere; }
+.adm-camp small { color: var(--muted); }
+.adm-filter { display: grid; grid-template-columns: 1fr; gap: 8px; margin-bottom: 8px; }
+@media (min-width: 640px) { .adm-filter { grid-template-columns: minmax(0, 1fr) 150px 150px auto; } }
+.adm-filter input, .adm-filter select { min-height: 44px; padding: 0 12px; border: 1px solid var(--line); border-radius: 10px; background: #fff; }
+.adm-count { color: var(--muted); font-size: .85rem; margin: 8px 0 12px; }
+.adm-empty { padding: 32px 0; text-align: center; color: var(--muted); }
+.adm-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+.adm-card { background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 14px; display: grid; gap: 12px; }
+.adm-top { display: flex; gap: 12px; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; }
+.adm-top h3 { margin: 0 0 2px; font-size: 1.1rem; overflow-wrap: anywhere; }
+.adm-top time { color: var(--muted); font-size: .85rem; margin-right: 8px; }
+.adm-tag { display: inline-block; font-size: .75rem; font-weight: 700; padding: 2px 8px; border-radius: 99px; background: var(--peach); color: var(--orange-ink); }
+.adm-tag.ok { background: var(--green-soft); color: var(--green-ink); }
+.adm-status { display: grid; gap: 2px; }
+.adm-status select { min-height: 44px; padding: 0 10px; border: 1px solid var(--line); border-radius: 10px; background: var(--cream); font-weight: 700; }
+.adm-status small { min-height: 1.2em; color: var(--muted); font-size: .75rem; }
+.adm-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.adm-contact { display: flex; flex-wrap: wrap; gap: 8px; }
+.adm-order { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 12px; background: var(--cream); border-radius: 10px; padding: 10px; }
+.adm-order img { width: 72px; height: 72px; object-fit: cover; border-radius: 8px; background: var(--peach); }
+.adm-order > div { display: grid; gap: 2px; font-size: .9rem; min-width: 0; overflow-wrap: anywhere; }
+.adm-order > :only-child { grid-column: 1 / -1; }
+.adm-meta { margin: 0; color: var(--muted); font-size: .8rem; overflow-wrap: anywhere; }
